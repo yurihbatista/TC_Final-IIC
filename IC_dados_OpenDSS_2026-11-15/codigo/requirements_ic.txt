@@ -1,0 +1,10 @@
+# Versoes com que as bases do pacote foram geradas (Python 3.13.5, Windows 11).
+# Versoes registradas no campo "versions" dos .meta.json e no ambiente de origem.
+py-dss-interface==2.3.0
+numpy==2.2.5
+pandas==2.2.3
+scipy==1.15.3
+scikit-learn==1.9.0
+PyYAML==6.0.2
+matplotlib==3.10.3
+pytest==9.0.3

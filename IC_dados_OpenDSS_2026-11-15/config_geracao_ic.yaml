@@ -1,0 +1,116 @@
+# =============================================================================
+# Base OpenDSS para o trabalho de IC (ESPEC_BASE_CASOS_2026-11-14, secao 5)
+# Usado por:  python -m src.ic.dataset        --config experiments/ic/config.yaml ...
+#             python -m src.ic.learning_curve --config experiments/ic/config.yaml ...
+# Caminhos relativos sao resolvidos a partir da raiz do repositorio.
+#
+# Politica PAE: toda escolha de desenho experimental e do GRUPO. Os valores
+# abaixo sao padroes propostos para a mecanica funcionar, marcados com
+# "# [A DECIDIR pelo grupo]". Nao sao recomendacao.
+# =============================================================================
+
+version: 1
+
+# ---------------------------------------------------------------- plantas
+plants:
+  P1:
+    data_dir: data
+    target_motor_id: 1          # motor alvo base (M_1250_TARGET, barra MV_BUS)
+    n1_transformers_out: null   # null = usa contingency.transformers_out do yaml (P1: [TR2])
+  P2:
+    data_dir: data_plant2       # criado pelo agente planta2; uso opcional
+    target_motor_id: null       # null = target_motor.motor_id do yaml da planta
+    n1_transformers_out: null   # null = yaml (P2: [TR_B])
+
+# Probabilidade de cada planta no sorteio (P2 opcional).
+plant_probs: {P1: 1.0}          # [A DECIDIR pelo grupo] ex.: {P1: 0.5, P2: 0.5}
+
+# ---------------------------------------------------------------- condicao
+contingency:
+  p_N1: 0.5                     # [A DECIDIR pelo grupo] fracao N-1 (via dimensao LHS: fracao exata)
+
+source:
+  # Faixa do isc3 da fonte principal (kA, 13,8 kV). Faz o Scc variar.
+  # Com 15 kA (padrao do yaml da P1) o Scc na MV_BUS e 74,2 MVA (N-1) e
+  # ~123 MVA (N-0). isc1 acompanha na razao isc1/isc3 do yaml.
+  isc3_kA_range: [10.0, 20.0]   # [A DECIDIR pelo grupo]
+
+static_load_mult_range: [0.8, 1.2]   # [A DECIDIR pelo grupo] multiplicador kW/kvar das cargas estaticas
+
+# ---------------------------------------------------------------- motor alvo
+target:
+  # lhs: alvo sintetico na barra do alvo base, parametros por LHS nas faixas
+  #      abaixo (padrao: media +-2 sigma da Tabela II do artigo de IC).
+  # existing: alvo sorteado entre os motores existentes (lista existing_ids);
+  #      os demais motores formam o vetor liga/desliga.
+  mode: lhs                     # [A DECIDIR pelo grupo]
+  # Tabela II (Faria e Batista): media / desvio. Faixa = media +- 2 sigma.
+  #   Pn 995,86/155,41 kW; Ip/In 6,303/0,729; cos phi_p 0,265/0,049; eta 0,931/0,017
+  Pn_kW_range: [685.04, 1306.68]      # [A DECIDIR pelo grupo]
+  Ip_In_range: [4.845, 7.761]         # [A DECIDIR pelo grupo]
+  cosphi_p_range: [0.167, 0.363]      # [A DECIDIR pelo grupo]
+  eta_range: [0.897, 0.965]           # [A DECIDIR pelo grupo]
+  # Fator de potencia em regime do alvo (nao e feature do artigo de IC):
+  # "base" = o do motor alvo base do csv (P1: 0,89), ou um numero.
+  pf_running: base                    # [A DECIDIR pelo grupo]
+  existing_ids: {P1: [15, 16, 17, 18, 19, 20, 1], P2: null}   # [A DECIDIR pelo grupo] (P2 null = target_candidates do yaml)
+
+# ---------------------------------------------------------------- liga/desliga
+switching:
+  bernoulli_p: 0.5              # [A DECIDIR pelo grupo] (ESPEC: p = 0,5)
+
+# ---------------------------------------------------------------- rotulo
+# Padrao = artigo de IC (secao II-C): y = 1 (viavel) se Vmin na partida >
+# 0,85 pu, sem sobretensao apos o desligamento e carregamento dentro da
+# capacidade NOMINAL dos trafos em servico.
+label:
+  v_min_gt: 0.85                # [A DECIDIR pelo grupo] (estrito: Vmin > limite)
+  vmin_buses: null              # null = minimo sobre todas as barras (como g1 da P1); ou lista
+  v_max_post_le: 1.08           # [A DECIDIR pelo grupo] "sem sobretensao": V_sw do yaml (1,08); alternativa 1,05 (v_max_pu)
+  loading_basis: nominal        # [A DECIDIR pelo grupo] nominal (AN, artigo de IC) | af (AF, como g3 do SEPOC)
+  loading_max: 1.0              # [A DECIDIR pelo grupo] max sobre trafos em servico de S_sust/S_base
+  require_converged: true
+
+# ---------------------------------------------------------------- Scc
+scc:
+  # auto: analitico quando o modelo se aplica (P1), senao faultstudy no
+  # proprio engine logo apos recompilar o master (Thevenin da rede).
+  method: auto                  # auto | analytic | engine_faultstudy
+
+# ---------------------------------------------------------------- estrategias
+exhaustive:
+  # Condicao FIXA da enumeracao 2^n (P1: 2^19 = 524 288 cenarios).
+  plant: P1
+  contingency: N-1              # [A DECIDIR pelo grupo]
+  isc3_kA: null                 # null = yaml da planta (P1: 15 kA)
+  static_load_mult: 1.0         # [A DECIDIR pelo grupo]
+  target: base                  # base = parametros do motor alvo do csv
+
+nsga2_history:
+  path: results_sepoc/history_all.csv
+  algorithms: [NSGA2]           # [A DECIDIR pelo grupo] ex.: [NSGA2, NSGA3, UNSGA3]; Random NAO e NSGA-II
+  max_unique: null              # null = todos os bits unicos; --n tambem limita
+  selection: random             # [A DECIDIR pelo grupo] random | first (ordem de aparicao) quando ha corte
+  # Condicao do historico (artigo SEPOC): P1, N-1, isc3 do yaml, alvo base, carga 1,0.
+
+# ---------------------------------------------------------------- execucao
+run:
+  block_size: 250               # amostras por bloco (unidade de retomada)
+  workers: 1                    # processos (um engine OpenDSS por processo)
+  work_dir: work/ic             # .dss por processo (gitignored)
+
+# ---------------------------------------------------------------- curva de aprendizagem
+learning_curve:
+  n_start: 100                  # [A DECIDIR pelo grupo] grade geometrica 100, 200, 400, ... ate o disponivel
+  factor: 2.0                   # [A DECIDIR pelo grupo]
+  n_reps: 20                    # [A DECIDIR pelo grupo] reamostragens por n
+  subsample: stratified         # [A DECIDIR pelo grupo] stratified (por y) | simple
+  test_fraction: 0.3            # usado so quando nao ha --test-data
+  C: 1.0                        # [A DECIDIR pelo grupo] (artigo de IC: C = 1,0)
+  max_iter: 2000
+  primary_metric: auc           # [A DECIDIR pelo grupo] accuracy | recall0 | auc
+  epsilon: 0.005                # [A DECIDIR pelo grupo] plato: |m(n) - m(n_max)| <= eps
+  ci_level: 0.95
+  ci_width_max: 0.02            # [A DECIDIR pelo grupo] largura do IC (percentil das reamostragens) <= limite
+  delta_boundary: 0.01          # [A DECIDIR pelo grupo] fronteira: |Vmin - 0,85| < delta
+  seed: 2026

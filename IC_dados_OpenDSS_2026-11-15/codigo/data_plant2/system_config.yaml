@@ -1,0 +1,184 @@
+# =============================================================================
+# PLANTA 2 (P2) - sistema industrial 4,16 kV com barramento SECCIONADO
+# ESPEC_BASE_CASOS_2026-11-14, secao 3 (estrutura do slide 3 da proposta do
+# Grupo C). Criado pelo agente planta2 em 2026-11-14.
+#
+#   SRC_A (13,8 kV) --TR_A--> MV_A ==TIE_AB (disjuntor, fechado)== MV_B <--TR_B-- SRC_B
+#                                                                   |  \
+#                                                                   G   TR_LV (4,16:0,48)
+#                                                                         |
+#                                                                       LV_048
+#   Contingencia N-1: TR_B fora => toda a planta via TR_A + gerador G.
+#
+# TODOS os valores numericos abaixo e nos CSVs sao PADROES PROPOSTOS
+# "# [A DECIDIR pelo grupo]" (politica PAE: escolha de desenho do grupo).
+# A justificativa de engenharia e a faixa tipica estao em comentario.
+# Valores nao vem de planta real; sao plausiveis por ordem de grandeza.
+#
+# Valores das tabelas CSV (comentarios aqui, pois CSV nao aceita comentario):
+#   buses.csv  - 5 barras: SRC_A, SRC_B (13,8 kV), MV_A, MV_B (4,16 kV),
+#                LV_048 (0,48 kV). Coordenadas so ilustrativas.
+#   lines.csv  - TIE_AB: disjuntor de interligacao MV_A-MV_B como Line
+#                switch=yes (impedancia minima do OpenDSS). ampacity_A=2000
+#                (barramento/disjuntor de 2000 A, faixa tipica 1200-3000 A
+#                em 4,16 kV) NAO e usada pelo builder atual em linha switch
+#                (ver open issue: OpenDSS assume normamps=400 A padrao).
+#   motors.csv - [A DECIDIR pelo grupo] 22 motores: alvo padrao 1250 kW em
+#                MV_A (id 1); 6 MT em MV_A (200..1100 kW), 7 MT em MV_B
+#                (160..1000 kW), 8 BT em LV_048 (55..250 kW, 0,48 kV).
+#                Rendimento 0,92-0,96, FP 0,83-0,89, partida direta
+#                Ip/In 6,5 (MT) e 7,0 (BT), cos phi_p 0,20-0,35: faixas
+#                tipicas de motores de inducao (mesma convencao da P1;
+#                BT com Ip/In um pouco maior, tipico de motores IE3 de BT).
+#   loads.csv  - [A DECIDIR pelo grupo] cargas estaticas: MV_A 2,4 MW,
+#                MV_B 1,5 MW, LV_048 0,35 MW (FP ~0,95, tipico de carga de
+#                processo/utilidades compensada).
+# =============================================================================
+
+system:
+  name: "MV_Industrial_4_16kV_Sectionalized_N1"
+  base_kV_MV: 4.16
+  base_kV_HV: 13.8
+  base_MVA: 15.0                  # mesma base da P1
+  frequency_Hz: 60
+  source_bus: "SRC_A"             # fonte principal (Circuit)
+  mv_main_bus: "MV_A"             # barra MV principal (padrao do builder)
+
+# NAO HA bloco de topo `source:` nesta planta (retirado em 2026-11-14, achado
+# P2-V1; copia anterior em _quarentena/2026-11-14_planta2_P2V1/). O builder
+# (dss_builder._primary_source) e o Scc (scenario_core.scc_mva_analytic) usam
+# `sources[0]` quando `sources:` existe, e `source:` era ignorado sem erro.
+#
+# COMO VARIAR O isc3 NA P2: altere `sources[0]` (SRC_A, que vira o Circuit).
+# O deep_merge troca listas INTEIRAS, entao o override leva a lista completa:
+#   srcs = copy.deepcopy(cfg["sources"]); srcs[0]["isc3_kA"] = X
+#   srcs[0]["isc1_kA"] = X * 10/12   # manter a razao isc1/isc3 da fonte
+#   overrides = {"sources": srcs}
+# Um override `{"source": {...}}` NAO tem efeito na P2 (cria uma chave que
+# nenhum codigo le quando `sources:` existe).
+#
+# Duas entradas 13,8 kV independentes.
+sources:
+  # [A DECIDIR pelo grupo] SRC_A: 12 kA (~287 MVA), X/R 12. Faixa tipica de
+  # subestacao industrial em 13,8 kV: 8-25 kA, X/R 8-15. Um pouco mais
+  # fraca que a P1 (15 kA) para a P2 nao ficar trivial com o gerador.
+  - {name: SRC_A, bus: SRC_A, basekv: 13.8, pu: 1.0, angle: 0,
+     isc3_kA: 12.0, isc1_kA: 10.0, x1r1: 12.0, x0r0: 7.0}
+  # [A DECIDIR pelo grupo] SRC_B: 10 kA (~239 MVA), X/R 10 (segunda entrada,
+  # tipicamente mais fraca). Em N-1 so alimenta TR_B, que esta fora:
+  # continua energizada (barra SRC_B isolada a 1,0 pu), sem efeito na planta.
+  - {name: SRC_B, bus: SRC_B, basekv: 13.8, pu: 1.0, angle: 0,
+     isc3_kA: 10.0, isc1_kA: 8.0, x1r1: 10.0, x0r0: 6.0}
+
+transformers:
+  # [A DECIDIR pelo grupo] TR_A/TR_B: 13,8:4,16 kV, 7,5/9 MVA (AN/AF), 8 %
+  # (valores fixados na ESPEC secao 3; iguais aos da P1). Perdas 0,5 %/0,1 %
+  # (faixa tipica de trafo de potencia de 5-10 MVA: 0,4-0,8 % / 0,08-0,15 %).
+  - name: "TR_A"
+    bus_hv: "SRC_A"
+    bus_lv: "MV_A"
+    kva: 7500
+    kva_af: 9000
+    kV_HV: 13.8
+    kV_LV: 4.16
+    conn_HV: "delta"
+    conn_LV: "wye"
+    xhl_percent: 8.0
+    loss_load_percent: 0.5
+    loss_no_load_percent: 0.1
+  - name: "TR_B"
+    bus_hv: "SRC_B"
+    bus_lv: "MV_B"
+    kva: 7500
+    kva_af: 9000
+    kV_HV: 13.8
+    kV_LV: 4.16
+    conn_HV: "delta"
+    conn_LV: "wye"
+    xhl_percent: 8.0
+    loss_load_percent: 0.5
+    loss_no_load_percent: 0.1
+  # [A DECIDIR pelo grupo] TR_LV: 4,16:0,48 kV, 2000/2300 kVA (ONAN/ONAF,
+  # +15 % com ventilacao forcada, tipico ate 2500 kVA), Z = 5,75 % (valor
+  # padronizado IEEE C57.12.10 para 1500-2500 kVA; DECLARADO, nao reconferido
+  # na norma nesta sessao). Perdas 1,0 %/0,2 % (trafo de distribuicao).
+  - name: "TR_LV"
+    bus_hv: "MV_B"
+    bus_lv: "LV_048"
+    kva: 2000
+    kva_af: 2300
+    kV_HV: 4.16
+    kV_LV: 0.48
+    conn_HV: "delta"
+    conn_LV: "wye"
+    xhl_percent: 5.75
+    loss_load_percent: 1.0
+    loss_no_load_percent: 0.2
+
+# Gerador local em MV_B (elemento Generator do OpenDSS). Chaves alem de
+# name/bus/phases/enabled viram parametros DSS na ordem abaixo.
+generators:
+  # [A DECIDIR pelo grupo] G: 1500 kW, 1875 kVA (FP nominal 0,8, tipico de
+  # grupo gerador/cogeracao industrial de 1-3 MVA em 4,16 kV). Modelo 3 (PV)
+  # com Vpu=1,0 e limites de reativo maxkvar = 0,6*kVA (sobre-excitado, FP
+  # 0,8) e minkvar = -0,3*kVA (subexcitado), faixa tipica da curva de
+  # capabilidade. Abaixo de Vminpu (padrao OpenDSS 0,90) o OpenDSS troca o
+  # modelo do gerador para impedancia constante: durante a partida a tensao
+  # cai abaixo disso; Vminpu=0.80 deixa o modelo PV valido em boa parte da
+  # faixa do afundamento ([A DECIDIR pelo grupo]; faixa usual 0,70-0,90).
+  - {name: G, bus: MV_B, kV: 4.16, kW: 1500, kvar: 0, kVA: 1875, model: 3,
+     Vpu: 1.0, maxkvar: 1125, minkvar: -560, Vminpu: 0.80}
+
+contingency:
+  mode: "N-1"
+  transformers_out: ["TR_B"]      # ESPEC secao 3: N-1 = TR_B fora
+  description: "Perda do TR_B - planta inteira via TR_A (7,5/9 MVA), interligacao fechada e gerador G"
+
+# Restricoes por secao (ESPEC secao 3).
+constraints:
+  # g1_s = V_ir - Vmin_INRUSH(s) para cada secao monitorada.
+  sag_monitored_buses: [MV_A, MV_B, LV_048]
+  # [A DECIDIR pelo grupo] g3 por trafo: TR_A (o trafo de 4,16 kV em servico,
+  # obrigatorio pela ESPEC) e TR_LV (opcional pela ESPEC). Retirar TR_LV desta
+  # lista deixa so g3_TR_A. Sem a chave, o nucleo usa g3 no 1o trafo em servico.
+  loading_transformers: [TR_A, TR_LV]
+
+target_motor:
+  motor_id: 1                     # [A DECIDIR pelo grupo] alvo padrao: 1250 kW em MV_A (ESPEC)
+  name: "MA_1250_TARGET"
+  evaluate_energization: true
+  evaluate_de_energization: true
+
+# [A DECIDIR pelo grupo] Candidatos a alvo na P2 (motor_id), lidos pelo
+# gerador de instancias PAE ("na P2, a lista do yaml", ESPEC secao 4).
+# Cobre as tres secoes: MV_A 1250/1100/900 kW (ids 1,2,3), MV_B 1000/800/710
+# kW (ids 8,9,10) e LV_048 250 kW (id 15).
+target_candidates: [1, 2, 3, 8, 9, 10, 15]
+
+# Mesmos limites da P1 (definicoes do artigo; ESPEC secao 2: V_ir = 0,85 e
+# V_sw = 1,08 vem do yaml).
+operational_limits:
+  v_min_pu: 0.95
+  v_max_pu: 1.05
+  v_min_inrush_pu: 0.85
+  v_max_switching_pu: 1.08
+  thermal_loading_max_percent: 110.0
+  protection_undervoltage_pu: 0.88
+  protection_overvoltage_pu: 1.08
+
+# Mesmos operadores/parametros da P1 (lidos por formulations.binary_operators).
+optimization:
+  algorithm: "NSGA3"
+  population_size: 40
+  n_generations: 20
+  crossover_prob: 0.9
+  mutation_prob: 0.15
+  seed: 42
+
+penalty:
+  unconverged: 5.0
+  critical_violation: 3.0
+
+logging:
+  level: "INFO"
+  file: "results/run_plant2.log"

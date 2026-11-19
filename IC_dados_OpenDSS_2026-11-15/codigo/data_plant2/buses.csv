@@ -1,0 +1,6 @@
+bus_id,name,base_kV,x_coord,y_coord,critical
+1,SRC_A,13.8,0,0,false
+2,SRC_B,13.8,0,2,false
+3,MV_A,4.16,200,0,true
+4,MV_B,4.16,200,2,true
+5,LV_048,0.48,400,2,false

@@ -1,0 +1,91 @@
+# =============================================================================
+# Sistema industrial 4,16 kV - alimentador unico + 2 trafos em paralelo
+# Cenario AGRESSIVO N-1: TR2 fora, TR1 sozinho com capacidade limitada
+# Forca o NSGA-II a desligar maquinas para viabilizar a partida do alvo
+# =============================================================================
+
+system:
+  name: "MV_Industrial_4_16kV_Single_Feeder_N1"
+  base_kV_MV: 4.16
+  base_kV_HV: 13.8
+  base_MVA: 15.0
+  frequency_Hz: 60
+  source_bus: "SRC"
+  mv_main_bus: "MV_BUS"
+
+# Fonte HV menos robusta (subestacao industrial tipica)
+source:
+  isc3_kA: 15.0
+  isc1_kA: 12.0
+  x1r1: 12.0
+  x0r0: 7.0
+
+# Dois transformadores em paralelo, dupla capacidade de resfriamento:
+#   AN (ar natural)  = 7,5 MVA  -> base de impedancia (xhl_percent)
+#   AF (ar forcado)  = 9,0 MVA  -> limite de carregamento continuo (kva_af)
+# Em N-1, TR1 sozinho em AF (9 MVA) ainda e INSUFICIENTE para ~13,8 MW total.
+# Protecao de sobrecarga do trafo: ANSI 49 (replica termica) + 51 (retaguarda),
+# supervisionando o carregamento sustentado referido ao estagio AF.
+transformers:
+  - name: "TR1"
+    kva: 7500          # AN - base de impedancia
+    kva_af: 9000       # AF - limite p/ restricao de carregamento (ANSI 49)
+    kV_HV: 13.8
+    kV_LV: 4.16
+    conn_HV: "delta"
+    conn_LV: "wye"
+    xhl_percent: 8.0
+    loss_load_percent: 0.5
+    loss_no_load_percent: 0.1
+  - name: "TR2"
+    kva: 7500
+    kva_af: 9000
+    kV_HV: 13.8
+    kV_LV: 4.16
+    conn_HV: "delta"
+    conn_LV: "wye"
+    xhl_percent: 8.0
+    loss_load_percent: 0.5
+    loss_no_load_percent: 0.1
+
+contingency:
+  mode: "N-1"
+  transformers_out: ["TR2"]
+  description: "Perda do TR2 - somente TR1 (7,5 MVA) operativo"
+
+target_motor:
+  motor_id: 1
+  name: "M_1250_TARGET"
+  evaluate_energization: true
+  evaluate_de_energization: true
+
+operational_limits:
+  v_min_pu: 0.95
+  v_max_pu: 1.05
+  v_min_inrush_pu: 0.85            # Mais rigoroso (motores sensiveis na barra)
+  v_max_switching_pu: 1.08
+  thermal_loading_max_percent: 110.0
+  protection_undervoltage_pu: 0.88
+  protection_overvoltage_pu: 1.08
+
+optimization:
+  algorithm: "NSGA2"
+  population_size: 60
+  n_generations: 30
+  crossover_prob: 0.9
+  mutation_prob: 0.15
+  seed: 42
+  ranking_weights:
+    f1_sag_energization: 0.30
+    f2_swell_deenergization: 0.20
+    f3_violations: 0.20
+    f4_losses: 0.10
+    f5_idle_kW: 0.20             # peso maior em idle - prefere desligar menos maquinas
+
+penalty:
+  unconverged: 5.0
+  critical_violation: 3.0
+
+logging:
+  level: "INFO"
+  file: "results/run.log"

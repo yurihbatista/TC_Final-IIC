@@ -1,0 +1,2 @@
+line_id,name,bus_from,bus_to,length_m,r1_ohm_km,x1_ohm_km,c1_nf_km,ampacity_A,phases,switch
+1,TIE_AB,MV_A,MV_B,,,,,2000,3,yes

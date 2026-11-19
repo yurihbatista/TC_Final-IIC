@@ -1,0 +1,188 @@
+{
+  "data": [
+    "p2_stratified_k_n1500_s201.csv"
+  ],
+  "test": {
+    "kind": "arquivos",
+    "files": [
+      "test_p2_stratified_k_n1000_s202.csv"
+    ],
+    "n": 1000,
+    "frac_y1": 0.599
+  },
+  "pools": {
+    "stratified_k": 1500
+  },
+  "pools_before_cap": {
+    "stratified_k": 1500
+  },
+  "n_max_cap": null,
+  "reference": {
+    "kind": "independent",
+    "files": [
+      "p2_stratified_k_n6000_s203.csv"
+    ],
+    "overlap_ref_test": 0,
+    "groups": {
+      "stratified_k": {
+        "status": "ok",
+        "pool_size": 6000,
+        "overlap_ref_train": 0,
+        "accuracy": {
+          "value": 0.954,
+          "sd": 0.0,
+          "n": 6000,
+          "n_fits": 1,
+          "pool_size": 6000
+        },
+        "recall0": {
+          "value": 0.9251870324189526,
+          "sd": 0.0,
+          "n": 6000,
+          "n_fits": 1,
+          "pool_size": 6000
+        },
+        "auc": {
+          "value": 0.9932097968767564,
+          "sd": 0.0,
+          "n": 6000,
+          "n_fits": 1,
+          "pool_size": 6000
+        }
+      }
+    }
+  },
+  "max_pool_frac": 1.0,
+  "n_sufficient_is_relative_to_n_max": true,
+  "primary_metric": "auc",
+  "n_sufficient": {
+    "accuracy": {
+      "stratified_k": {
+        "metric": "accuracy",
+        "epsilon": 0.005,
+        "ci_width_max": 0.02,
+        "reference_kind": "independent",
+        "reference_n_max": 1500,
+        "reference_value": 0.954,
+        "reference_sd": 0.0,
+        "reference_n": 6000,
+        "reference_n_fits": 1,
+        "n_max": 1500,
+        "pool_size": 1500,
+        "relative_to_n_max": true,
+        "max_pool_frac": 1.0,
+        "n_rule_points": 5,
+        "n_sufficient": 800,
+        "frac_of_pool_at_n_star": 0.5333333333333333,
+        "note": "n* relativo a n_max (tamanho do pool) e a referencia; ver README"
+      }
+    },
+    "recall0": {
+      "stratified_k": {
+        "metric": "recall0",
+        "epsilon": 0.005,
+        "ci_width_max": 0.02,
+        "reference_kind": "independent",
+        "reference_n_max": 1500,
+        "reference_value": 0.9251870324189526,
+        "reference_sd": 0.0,
+        "reference_n": 6000,
+        "reference_n_fits": 1,
+        "n_max": 1500,
+        "pool_size": 1500,
+        "relative_to_n_max": true,
+        "max_pool_frac": 1.0,
+        "n_rule_points": 5,
+        "n_sufficient": null,
+        "frac_of_pool_at_n_star": null,
+        "note": "nao estabelecido: nenhum n com reamostragens satisfaz a regra ate o n_max; aumentar a base ou rever eps/ci_width_max"
+      }
+    },
+    "auc": {
+      "stratified_k": {
+        "metric": "auc",
+        "epsilon": 0.005,
+        "ci_width_max": 0.02,
+        "reference_kind": "independent",
+        "reference_n_max": 1500,
+        "reference_value": 0.9932097968767564,
+        "reference_sd": 0.0,
+        "reference_n": 6000,
+        "reference_n_fits": 1,
+        "n_max": 1500,
+        "pool_size": 1500,
+        "relative_to_n_max": true,
+        "max_pool_frac": 1.0,
+        "n_rule_points": 5,
+        "n_sufficient": 400,
+        "frac_of_pool_at_n_star": 0.26666666666666666,
+        "note": "n* relativo a n_max (tamanho do pool) e a referencia; ver README"
+      }
+    }
+  },
+  "config": {
+    "reference": "independent",
+    "reference_n": null,
+    "reference_reps": 20,
+    "n_max_cap": null,
+    "max_pool_frac": 1.0,
+    "n_start": 100,
+    "factor": 2.0,
+    "n_reps": 20,
+    "subsample": "stratified",
+    "test_fraction": 0.3,
+    "C": 1.0,
+    "max_iter": 2000,
+    "primary_metric": "auc",
+    "epsilon": 0.005,
+    "ci_level": 0.95,
+    "ci_width_max": 0.02,
+    "delta_boundary": 0.01,
+    "seed": 2026
+  },
+  "bias": [
+    {
+      "strategy_file": "stratified_k [p2_stratified_k_n1500_s201.csv]",
+      "n": 1500,
+      "Pprev_mean": 7410.211734902685,
+      "Pprev_sd": 2883.9883774435066,
+      "Pprev_min": 1937.4158235822329,
+      "Pprev_p05": 2947.301837332197,
+      "Pprev_p25": 4966.459990279041,
+      "Pprev_p50": 7334.533044103577,
+      "Pprev_p75": 9917.861418667886,
+      "Pprev_p95": 11928.562244872248,
+      "Pprev_max": 12791.22881257663,
+      "n_on_mean": 10.542,
+      "frac_near_boundary": 0.104,
+      "n_near_boundary": 156,
+      "frac_y1": 0.6066666666666667,
+      "frac_N1": 0.5,
+      "Scc_min": 74.05053537635105,
+      "Scc_max": 151.9087095499068,
+      "n_unique_feature_vectors": 1500
+    },
+    {
+      "strategy_file": "stratified_k [test_p2_stratified_k_n1000_s202.csv]",
+      "n": 1000,
+      "Pprev_mean": 7362.920434950337,
+      "Pprev_sd": 2905.7442007687164,
+      "Pprev_min": 1926.6280685305835,
+      "Pprev_p05": 2778.9866840225586,
+      "Pprev_p25": 4818.031887098656,
+      "Pprev_p50": 7395.636510935419,
+      "Pprev_p75": 9848.516441475967,
+      "Pprev_p95": 11781.231166105345,
+      "Pprev_max": 12831.56302114427,
+      "n_on_mean": 10.538,
+      "frac_near_boundary": 0.103,
+      "n_near_boundary": 103,
+      "frac_y1": 0.599,
+      "frac_N1": 0.5,
+      "Scc_min": 74.04783290974315,
+      "Scc_max": 151.8954454516846,
+      "n_unique_feature_vectors": 1000
+    }
+  ],
+  "delta_boundary": 0.01
+}

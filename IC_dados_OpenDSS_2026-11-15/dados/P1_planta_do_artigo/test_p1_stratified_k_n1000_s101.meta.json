@@ -1,0 +1,173 @@
+{
+  "created": "2026-11-14T18:33:07-03:00",
+  "finished": "2026-11-14T18:33:21-03:00",
+  "cmdline": "python -m src.ic.dataset --config experiments/ic/config.yaml --strategy stratified_k --n 1000 --seed 101 --workers 4 --out experiments/ic/demo/test_p1_stratified_k_n1000_s101.csv",
+  "strategy": "stratified_k",
+  "n_requested": 1000,
+  "seed": 101,
+  "out": "D:\\000 - UFMG - DOUTORADO\\DISCIPLINAS CURSADAS\\COMPUTA\u00c7\u00c3O EVOLUCION\u00c1RIA\\TRABALHO FINAL\\nsga2_vcb_decision\\experiments\\ic\\demo\\test_p1_stratified_k_n1000_s101.csv",
+  "n_rows": 1000,
+  "n_blocks": 4,
+  "n_blocks_reused": 0,
+  "n_blocks_computed": 4,
+  "workers": 4,
+  "block_size": 250,
+  "wall_s_this_invocation": 14.443075199960731,
+  "rows_per_s_wall": 69.23733250400295,
+  "eval_ms_per_sample": {
+    "mean": 24.617458200023975,
+    "median": 23.795199987944216,
+    "p95": 34.62186498800292,
+    "max": 74.61509999120608,
+    "note": "tempo de Edit+4 fluxos+extracao por amostra, num processo"
+  },
+  "class_balance": {
+    "y1": 519,
+    "y0": 481
+  },
+  "n_unconverged": 0,
+  "scc_methods": {
+    "analytic": 1000
+  },
+  "plan_info": {},
+  "label_rule": {
+    "v_min_gt": 0.85,
+    "vmin_buses": null,
+    "v_max_post_le": 1.08,
+    "loading_basis": "nominal",
+    "loading_max": 1.0,
+    "require_converged": true
+  },
+  "definitions": {
+    "Pprev_kW": "P ativa total da fonte no instantaneo PRE-ENERG (alvo desligado), com perdas",
+    "Scc_MVA": "Scc trifasico na barra do alvo, Thevenin sem cargas (analitico ou faultstudy)",
+    "bits": "bit k = maquina other_ids[k] (motor_ids da planta sem o alvo, ordem do csv)",
+    "tr_load_nom": "max sobre trafos em servico de max(S PRE-ENERG, PRE-DESL, POS-DESL)/kVA AN",
+    "tr_load_af": "idem, sobre kVA AF",
+    "y_sepoc": "viabilidade da formulacao restrita (g1, g2, g3 por trafo em servico no AF)"
+  },
+  "config": {
+    "version": 1,
+    "plants": {
+      "P1": {
+        "data_dir": "D:\\000 - UFMG - DOUTORADO\\DISCIPLINAS CURSADAS\\COMPUTA\u00c7\u00c3O EVOLUCION\u00c1RIA\\TRABALHO FINAL\\nsga2_vcb_decision\\data",
+        "target_motor_id": 1,
+        "n1_transformers_out": null
+      },
+      "P2": {
+        "data_dir": "D:\\000 - UFMG - DOUTORADO\\DISCIPLINAS CURSADAS\\COMPUTA\u00c7\u00c3O EVOLUCION\u00c1RIA\\TRABALHO FINAL\\nsga2_vcb_decision\\data_plant2",
+        "target_motor_id": null,
+        "n1_transformers_out": null
+      }
+    },
+    "plant_probs": {
+      "P1": 1.0
+    },
+    "contingency": {
+      "p_N1": 0.5
+    },
+    "source": {
+      "isc3_kA_range": [
+        10.0,
+        20.0
+      ]
+    },
+    "static_load_mult_range": [
+      0.8,
+      1.2
+    ],
+    "target": {
+      "mode": "lhs",
+      "Pn_kW_range": [
+        685.04,
+        1306.68
+      ],
+      "Ip_In_range": [
+        4.845,
+        7.761
+      ],
+      "cosphi_p_range": [
+        0.167,
+        0.363
+      ],
+      "eta_range": [
+        0.897,
+        0.965
+      ],
+      "pf_running": "base",
+      "existing_ids": {
+        "P1": [
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          1
+        ],
+        "P2": null
+      }
+    },
+    "switching": {
+      "bernoulli_p": 0.5
+    },
+    "label": {
+      "v_min_gt": 0.85,
+      "vmin_buses": null,
+      "v_max_post_le": 1.08,
+      "loading_basis": "nominal",
+      "loading_max": 1.0,
+      "require_converged": true
+    },
+    "scc": {
+      "method": "auto"
+    },
+    "exhaustive": {
+      "plant": "P1",
+      "contingency": "N-1",
+      "isc3_kA": null,
+      "static_load_mult": 1.0,
+      "target": "base"
+    },
+    "nsga2_history": {
+      "path": "D:\\000 - UFMG - DOUTORADO\\DISCIPLINAS CURSADAS\\COMPUTA\u00c7\u00c3O EVOLUCION\u00c1RIA\\TRABALHO FINAL\\nsga2_vcb_decision\\results_sepoc\\history_all.csv",
+      "algorithms": [
+        "NSGA2"
+      ],
+      "max_unique": null,
+      "selection": "random"
+    },
+    "run": {
+      "block_size": 250,
+      "workers": 1,
+      "work_dir": "D:\\000 - UFMG - DOUTORADO\\DISCIPLINAS CURSADAS\\COMPUTA\u00c7\u00c3O EVOLUCION\u00c1RIA\\TRABALHO FINAL\\nsga2_vcb_decision\\work\\ic"
+    },
+    "learning_curve": {
+      "n_start": 100,
+      "factor": 2.0,
+      "n_reps": 20,
+      "subsample": "stratified",
+      "test_fraction": 0.3,
+      "C": 1.0,
+      "max_iter": 2000,
+      "primary_metric": "auc",
+      "epsilon": 0.005,
+      "ci_level": 0.95,
+      "ci_width_max": 0.02,
+      "delta_boundary": 0.01,
+      "seed": 2026
+    }
+  },
+  "config_path": "D:\\000 - UFMG - DOUTORADO\\DISCIPLINAS CURSADAS\\COMPUTA\u00c7\u00c3O EVOLUCION\u00c1RIA\\TRABALHO FINAL\\nsga2_vcb_decision\\experiments\\ic\\config.yaml",
+  "config_digest": "74ce68aad6d1f071",
+  "versions": {
+    "python": "3.13.5",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "dataset_version": "ic-dataset-1 (2026-11-14)",
+    "py_dss_interface": "2.3.0",
+    "numpy": "2.2.5",
+    "pandas": "2.2.3",
+    "scipy": "1.15.3",
+    "sklearn": "1.9.0"
+  }
+}

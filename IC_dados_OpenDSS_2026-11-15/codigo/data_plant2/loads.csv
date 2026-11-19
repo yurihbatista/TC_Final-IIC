@@ -1,0 +1,6 @@
+load_id,name,bus,kW,kvar,kV,phases,critical,sheddable,initial_state
+1,LD_A_PROCESSO_CRIT,MV_A,2000,650,4.16,3,true,false,on
+2,LD_A_UTILIDADES,MV_A,400,130,4.16,3,false,false,on
+3,LD_B_PROCESSO,MV_B,1200,400,4.16,3,true,false,on
+4,LD_B_AUX,MV_B,300,100,4.16,3,false,false,on
+5,LD_LV_ILUM_INSTRUM,LV_048,350,120,0.48,3,true,false,on

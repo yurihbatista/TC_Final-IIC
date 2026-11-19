@@ -1,0 +1,35 @@
+﻿coluna,papel,unidade,descricao
+Pprev_kW,feature,kW,"Potencia ativa total fornecida pela(s) fonte(s) da rede no instantaneo PRE-ENERG (motor alvo desligado; demais maquinas no estado de `bits`). Inclui as perdas. Na P2 e a soma de SRC_A e SRC_B, liquida da geracao do gerador local G: Pprev = cargas + perdas - 1500 kW de G."
+Scc_MVA,feature,MVA,"Potencia de curto-circuito trifasica na barra do motor alvo (Thevenin da rede, sem contribuicao das cargas). P1: calculo analitico (Thevenin da fonte em serie com os trafos em servico; nao ha outra contribuicao). P2: faultstudy do OpenDSS, que inclui a contribuicao do gerador local G (em N-1, o Scc da P2 fica cerca de 6,8 MVA acima do da P1 na mesma faixa de isc3) e, em N-0, a da fonte SRC_B pela interligacao. Varia com isc3_kA e com a contingencia."
+Pn_kW,feature,kW,Potencia nominal do motor alvo. Nas bases stratified_k/bernoulli e sorteada por LHS (media +-2 desvios da Tabela II do artigo de IC); nas bases do estudo SEPOC e o motor real de 1250 kW.
+Ip_In,feature,-,Relacao corrente de partida / corrente nominal do motor alvo.
+cosphi_p,feature,-,Fator de potencia do motor alvo na partida.
+eta,feature,-,Rendimento nominal do motor alvo.
+C_N1,feature,"{0,1}",1 se a contingencia N-1 esta aplicada (P1: TR2 fora; P2: TR_B fora); 0 em N-0.
+bits,estado liga/desliga (nao e feature do artigo),texto,Estado liga (1) / desliga (0) das demais maquinas. O caractere k (k = 0 a esquerda) corresponde a linha bit = k de maquinas_bits_<planta>.csv. LER COMO TEXTO (tem zeros a esquerda).
+n_on,estado liga/desliga (nao e feature do artigo),-,Numero de maquinas ligadas (quantidade de '1' em bits).
+v_min_inrush,resultado da simulacao (alvo continuo; NAO usar como entrada),pu,"Menor tensao entre todas as barras no instantaneo INRUSH (partida do motor alvo, rotor bloqueado modelado como impedancia)."
+v_max_post,resultado da simulacao (alvo continuo; NAO usar como entrada),pu,"Maior tensao entre todas as barras no instantaneo POS-DESL (motor alvo desligado depois de operar). Fica <= 1,000 pu em todas as amostras deste pacote, entao a condicao de sobretensao do rotulo nunca esta ativa. Na P2 em N-1 vale exatamente 1,0 pu em todas as linhas: e a barra SRC_B isolada, sem carga, que domina o maximo, e a grandeza nao informa nada sobre a planta (em N-0 fica sempre abaixo de 1,0)."
+tr_load_nom,resultado da simulacao (alvo continuo; NAO usar como entrada),pu (kVA AN),"Maior valor, entre os trafos em servico, de max(S em PRE-ENERG, PRE-DESL, POS-DESL) / potencia nominal AN do trafo."
+tr_load_af,resultado da simulacao (alvo continuo; NAO usar como entrada),pu (kVA AF),"Igual a tr_load_nom, mas dividido pela potencia com ventilacao forcada (AF)."
+y,rotulo,"{0,1}","1 = viavel (Classe 1): convergiu E v_min_label > 0,85 E v_max_post <= 1,08 E tr_load_nom <= 1,0. 0 = critico (Classe 0)."
+strategy,proveniencia,texto,"Estrategia do vetor liga/desliga: stratified_k (k ligadas, k uniforme em 0..n), bernoulli (cada maquina ligada com p = 0,5) ou nsga2_history (cenarios do historico do estudo SEPOC). Em p1_history_Random_s4 aparece nsga2_history, mas a origem e o algoritmo Random: ver hist_algorithm."
+seed,proveniencia,-,Semente da geracao da base.
+sample_id,proveniencia,-,Indice da amostra no plano da base (0 a n-1).
+plant,condicao,texto,P1 (planta do artigo) ou P2 (planta complexa).
+target_motor_id,condicao,-,"motor_id do motor alvo na planta (1 em todas as bases; nao e posicao em bits). Com alvo por LHS, os parametros do alvo sao os das colunas Pn_kW, Ip_In, cosphi_p, eta, nao os do motors.csv da planta (que nao esta no pacote)."
+contingency,condicao,texto,N-0 ou N-1 (mesma informacao de C_N1).
+isc3_kA,condicao,kA,"Corrente de curto-circuito trifasica da fonte principal (13,8 kV). Sorteada em [10, 20] kA; nas bases do estudo SEPOC e 15 kA. Na P2 so a SRC_A varia; a SRC_B fica fixa em 10 kA."
+static_load_mult,condicao,-,"Multiplicador de kW e kvar das cargas estaticas (sorteado em [0,8; 1,2]; 1,0 nas bases do estudo SEPOC)."
+pf_run,condicao,-,Fator de potencia do motor alvo em regime (fixo no do motor base).
+converged,resultado da simulacao (NAO usar como entrada),bool,Fluxo de potencia convergiu nos 4 instantaneos.
+v_min_label,resultado da simulacao (NAO usar como entrada),pu,Tensao usada no rotulo; igual a v_min_inrush na configuracao usada (minimo sobre todas as barras).
+tr_load_inrush_af,resultado da simulacao (NAO usar como entrada),pu (kVA AF),Carregamento do PRIMEIRO trafo em servico (P1: TR1; P2: TR_A) no instantaneo INRUSH / kVA AF. Na P1 coincide com o mais carregado (TR1 e TR2 sao iguais); na P2 em N-0 o TR_LV pode estar mais carregado. Nao entra no rotulo.
+y_sepoc,resultado da simulacao (NAO usar como entrada),"{0,1}","1 se o cenario e viavel pela formulacao com restricoes do artigo SEPOC (tensao na partida, sobretensao e carregamento no AF dos trafos em servico). Nao e o rotulo do trabalho de IC."
+f3,resultado da simulacao (NAO usar como entrada),contagem,"Objetivo f3 do estudo SEPOC: soma, nos instantaneos INRUSH, PRE-DESL e POS-DESL, do numero de barras fora dos limites de tensao (INRUSH e POS-DESL: 0,85-1,08 pu; PRE-DESL: 0,95-1,05 pu) mais as linhas com carregamento > 110 %. Nao e simulacao de rele. Nao entra no rotulo."
+scc_method,proveniencia,texto,Metodo do Scc: analytic (P1) ou engine_faultstudy (P2).
+eval_ms,tempo de execucao (NAO usar como entrada),ms,Tempo de avaliacao da amostra; depende da maquina e da carga dela. Nao e dado fisico.
+hist_algorithm,proveniencia (so historico),texto,Algoritmo de origem no estudo SEPOC (NSGA2 ou Random).
+hist_seed,proveniencia (so historico),-,Semente da execucao de origem no estudo SEPOC.
+hist_v_min_inrush,resultado (so historico; NAO usar como entrada),pu,"Vmin registrado no historico original do estudo SEPOC (reavaliado aqui: diferenca maxima de 5,9e-13 pu). E copia de v_min_inrush: vaza o rotulo."
+hist_feasible,resultado (so historico; NAO usar como entrada),bool,Viabilidade registrada no historico original do estudo SEPOC. Igual a y em 100 % das linhas: vaza o rotulo.
